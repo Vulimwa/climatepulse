@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Vite production output
+dist/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Logs and reports
+*.log
+coverage/
+
+# Editor and operating-system files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.dist
+dist
+

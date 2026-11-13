@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Climate Pulse Kenya Admin-2 climate and resilience intelligence MVP"
+    />
+    <title>Climate Pulse Kenya</title>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.31/@arcgis/core/assets/esri/themes/light/main.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/calcite-components/3.2.1/calcite.css"
+    />
+    <link rel="stylesheet" href="./css/app.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "@arcgis/core/": "https://js.arcgis.com/4.31/@arcgis/core/"
+        }
+      }
+    </script>
+    <script
+      type="module"
+      src="https://js.arcgis.com/calcite-components/3.2.1/calcite.esm.js"
+    ></script>
+  </head>
+  <body>
+    <calcite-shell>
+      <calcite-navigation slot="header" label="Climate Pulse Kenya">
+        <calcite-navigation-logo
+          slot="logo"
+          heading="Climate Pulse Kenya"
+          description="Admin-2 Climate and Resilience Intelligence MVP"
+        ></calcite-navigation-logo>
+      </calcite-navigation>
+
+      <calcite-shell-panel
+        slot="panel-start"
+        position="start"
+        display-mode="dock"
+      >
+        <calcite-action-bar>
+          <calcite-action
+            id="navMap"
+            icon="map"
+            text="Overview Map"
+            active
+          ></calcite-action>
+          <calcite-action
+            id="navDashboard"
+            icon="dashboard"
+            text="Situation"
+          ></calcite-action>
+          <calcite-action id="navHazards" icon="rain" text="Hazards"></calcite-action>
+          <calcite-action id="navEarlySignal" icon="clock" text="Early Signal"></calcite-action>
+          <calcite-action id="navPeople" icon="users" text="People & Exposure"></calcite-action>
+          <calcite-action id="navRiskScore" icon="graph-bar" text="Risk Score"></calcite-action>
+          <calcite-action id="navDataMethod" icon="information" text="Data & Method"></calcite-action>
+          <calcite-action
+            id="navFutures"
+            icon="line-chart"
+            text="Climate Futures"
+          ></calcite-action>
+        </calcite-action-bar>
+      </calcite-shell-panel>
+
+      <div id="contentArea">
+      <main id="mapPage" class="page-content">
+        <div class="map-filter-bar" aria-label="Map filters">
+          <div class="map-heading"><strong>Climate Pulse map</strong><span>Admin-2 climate and resilience indicators</span></div>
+          <calcite-label>
+            County
+            <calcite-select id="countySelect" scale="s">
+              <calcite-option value="">All pilot counties</calcite-option>
+              <calcite-option value="Garissa">Garissa</calcite-option>
+              <calcite-option value="Marsabit">Marsabit</calcite-option>
+              <calcite-option value="Turkana">Turkana</calcite-option>
+            </calcite-select>
+          </calcite-label>
+          <calcite-label>
+            Sub-county
+            <calcite-select id="subCountySelect" scale="s" disabled>
+              <calcite-option value="">All sub-counties</calcite-option>
+            </calcite-select>
+          </calcite-label>
+          <calcite-label>
+            Map indicator
+            <calcite-select id="mapIndicatorSelect" scale="s" aria-label="Map indicator">
+            </calcite-select>
+          </calcite-label>
+          <calcite-label>
+            Classification
+            <calcite-segmented-control id="classificationMode" scale="s" layout="horizontal">
+              <calcite-segmented-control-item value="standard" checked>Standard</calcite-segmented-control-item>
+              <calcite-segmented-control-item value="relative">Relative</calcite-segmented-control-item>
+            </calcite-segmented-control>
+          </calcite-label>
+          <div class="data-date-chip">
+            <calcite-chip id="dataDateChip" icon="calendar" scale="s">Loading data dates...</calcite-chip>
+          </div>
+          <div id="spatialReadout" class="spatial-readout">Select a polygon to inspect its area and update all dashboard views.</div>
+        </div>
+        <aside class="map-legend-panel" aria-label="Active map legend">
+          <div id="indicatorLegend" class="indicator-legend"></div>
+          <div id="legendDiv"></div>
+        </aside>
+        <div id="viewDiv"></div>
+      </main>
+
+      <section id="dashboardPage" class="page-content dashboard-page hidden-page">
+        <div class="dashboard-content phase-shell">
+          <header class="dashboard-header">
+            <div><h1>Situation</h1><p>Answer in 10 seconds: where climate pressure and exposure are concentrated.</p><div id="dashboardScope" class="dashboard-scope">Scope: All pilot counties</div></div>
+            <div class="global-filters" aria-label="Global dashboard filters">
+              <calcite-label>County<calcite-select id="dashboardCountySelect" scale="s"><calcite-option value="">All pilot counties</calcite-option><calcite-option value="Garissa">Garissa</calcite-option><calcite-option value="Marsabit">Marsabit</calcite-option><calcite-option value="Turkana">Turkana</calcite-option></calcite-select></calcite-label>
+              <calcite-label>Sub-county<calcite-select id="globalSubCountySelect" scale="s" disabled><calcite-option value="">All sub-counties</calcite-option></calcite-select></calcite-label>
+              <calcite-label>Hazard<calcite-select id="hazardSelect" scale="s"><calcite-option value="vegetation">Vegetation</calcite-option><calcite-option value="rainfall">Rainfall</calcite-option><calcite-option value="soilMoisture">Soil moisture</calcite-option><calcite-option value="heat">Heat</calcite-option></calcite-select></calcite-label>
+              <calcite-label>Population group<calcite-select id="populationGroupSelect" scale="s"><calcite-option value="all">All</calcite-option><calcite-option value="under5">Under 5</calcite-option><calcite-option value="women1549">Women 15–49</calcite-option><calcite-option value="65plus">65+</calcite-option><calcite-option value="under18">Under 18</calcite-option></calcite-select></calcite-label>
+              <calcite-chip id="resetGlobalFilters" scale="s" appearance="outline">Reset</calcite-chip>
+            </div>
+          </header>
+          <div id="dashboardCards" class="dashboard-cards"></div>
+          <div class="dashboard-grid situation-grid">
+            <section class="dashboard-section"><h2>Hazard exposure by county</h2><div id="countyExposureChart" class="chart"></div></section>
+            <section class="dashboard-section"><h2>Exposure rate by county</h2><div id="countyRateChart" class="chart"></div></section>
+            <aside class="dashboard-section selected-area-panel"><h2>Selected area</h2><div id="areaProfile"></div></aside>
+          </div>
+          <div class="dashboard-grid">
+            <section class="dashboard-section"><h2>Admin-2 exposure ranking</h2><div class="chart-controls"><calcite-label>Rank by<calcite-select id="rankingMetricSelect" scale="s"><calcite-option value="exposedPopulation">Exposed people</calcite-option><calcite-option value="exposureRate">Exposure rate</calcite-option></calcite-select></calcite-label><calcite-button id="resetDashboardButton" appearance="outline" scale="s">All pilot counties</calcite-button></div><div id="adminRankingChart" class="chart"></div></section>
+            <section class="dashboard-section"><h2>Drought pressure and exposure</h2><div class="chart-controls"><calcite-label>Y-axis<calcite-select id="scatterMetricSelect" scale="s"><calcite-option value="exposedPopulation">Exposed people</calcite-option><calcite-option value="exposureRate">Exposure rate</calcite-option></calcite-select></calcite-label></div><div id="dpiScatter" class="chart"></div></section>
+          </div>
+          <section class="dashboard-section phase-placeholder"><h2>Interpretation</h2><p id="situationInsight">Exposure is shown by hazard and never summed across hazards. Select any bar or map polygon to cross-filter the dashboard.</p></section>
+          <div id="dpiDistribution" class="hidden-support"></div><div id="climateComparisons" class="hidden-support"></div><div id="dashboardTable" class="hidden-support"></div>
+        </div>
+      </section>
+      <section id="hazardsPage" class="page-content dashboard-page hidden-page">
+        <div class="phase-page analytical-page">
+          <header><h1>Hazards</h1><p>Which climate signals are outside their normal range?</p></header>
+          <div class="page-grid hazards-layout">
+            <section class="viz-card wide"><div class="card-heading"><h2>Hazard indicator matrix</h2><span class="legend-key"><i class="swatch dry"></i>Dry/stress <i class="swatch normal"></i>Normal <i class="swatch wet"></i>Wet</span></div><div id="hazardMatrix" class="matrix-chart" role="img" aria-label="Hazard indicator matrix"></div></section>
+            <section class="viz-card"><h2>Indicator detail</h2><div id="hazardDetail" class="detail-copy">Select a matrix column to inspect its definition and threshold.</div></section>
+            <section class="viz-card"><h2>Rainfall balance</h2><div id="rainfallChart" class="mini-chart"></div></section>
+            <section class="viz-card"><h2>Vegetation stress</h2><div id="vegetationChart" class="mini-chart"></div></section>
+            <section class="viz-card"><h2>Soil moisture &amp; heat</h2><div id="soilHeatChart" class="mini-chart"></div></section>
+          </div>
+        </div>
+      </section>
+      <section id="earlySignalPage" class="page-content dashboard-page hidden-page">
+        <div class="phase-page analytical-page">
+          <header><h1>Early Signal</h1><p>Act earlier from climate indicators—not a displacement forecast.</p></header>
+          <div class="notice-banner">Hazard early-signal from climate indicators. It is not a displacement forecast; no displacement data is in this dataset.</div>
+          <div class="page-grid early-layout">
+            <section class="viz-card"><h2>Alert board</h2><div id="alertBoard" class="alert-board"></div></section>
+            <section class="viz-card"><h2>Selected sub-county trend</h2><div id="signalTrend" class="trend-chart"></div></section>
+            <section class="viz-card"><h2>Lead-indicator timeline</h2><div id="signalTimeline" class="timeline"></div></section>
+            <section class="viz-card"><h2>Rules &amp; caveats</h2><div class="detail-copy">Watch: one trigger. Warning: two triggers. Alert: three triggers. Rules require SPI-3 ≤ −1 for two consecutive months, a VCI fall ≥ 15 points over two months, or root-zone soil moisture at or below the calendar-month 10th percentile. Missing soil observations remain gaps. This is a climate-indicator signal, not a displacement forecast.</div></section>
+          </div>
+        </div>
+      </section>
+      <section id="peoplePage" class="page-content dashboard-page hidden-page">
+        <div class="phase-page analytical-page">
+          <header><h1>People &amp; Exposure</h1><p>Who is exposed, by population group and hazard?</p></header>
+          <div class="page-grid people-layout">
+            <section class="viz-card"><h2>Age composition by county</h2><div id="ageCompositionChart" class="stacked-chart"></div></section>
+            <section class="viz-card wide"><div class="card-heading"><h2>Exposed people by hazard</h2><calcite-select id="peopleHazardSelect" scale="s"><calcite-option value="vegetation">Vegetation</calcite-option><calcite-option value="rainfall">Rainfall</calcite-option><calcite-option value="soilMoisture">Soil moisture</calcite-option><calcite-option value="heat">Heat</calcite-option></calcite-select></div><div id="peopleExposureChart" class="mini-chart"></div></section>
+            <section class="viz-card"><h2>Selected area</h2><div id="peopleProfile" class="detail-copy"></div></section>
+            <section class="viz-card wide"><h2>Exposure-rate heat map</h2><div id="exposureHeatmap" class="matrix-chart"></div></section>
+            <section class="viz-card"><h2>Vulnerable people ranking</h2><div id="vulnerableRanking" class="rank-chart"></div></section>
+          </div>
+        </div>
+      </section>
+      <section id="riskScorePage" class="page-content dashboard-page hidden-page">
+        <div class="phase-page analytical-page">
+          <header><h1>Risk Score</h1><p>CDRS is a prioritisation index—not a probability of displacement or damage.</p></header>
+          <div class="page-grid risk-layout">
+            <section class="viz-card wide"><h2>Ranked Climate-Demographic Risk Score</h2><div id="riskRanking" class="rank-chart"></div></section>
+            <section class="viz-card"><h2>Weights</h2><div class="weight-control"><label>Hazard <input id="weightHazard" type="range" min="0" max="1" step="0.05" value="0.5"></label><output id="weightHazardValue">0.50</output><label>Exposure <input id="weightExposure" type="range" min="0" max="1" step="0.05" value="0.35"></label><output id="weightExposureValue">0.35</output><label>Vulnerability <input id="weightVulnerability" type="range" min="0" max="1" step="0.05" value="0.15"></label><output id="weightVulnerabilityValue">0.15</output></div><p class="dashboard-note">Weights are normalized to sum to 1.</p></section>
+            <section class="viz-card wide"><h2>Hazard vs exposed rate</h2><div id="riskBubble" class="bubble-chart"></div></section>
+            <section class="viz-card"><h2>Explain this score</h2><div id="scoreExplanation" class="detail-copy"></div></section>
+          </div>
+        </div>
+      </section>
+      <section id="dataMethodPage" class="page-content dashboard-page hidden-page">
+        <div class="phase-page analytical-page">
+          <header><h1>Data &amp; Method</h1><p>Provenance, quality, formulas, and downloads.</p></header>
+          <div class="method-grid">
+            <section class="viz-card"><h2>Sources &amp; dates</h2><div id="sourceTable"></div></section>
+            <section class="viz-card"><h2>Quality overview</h2><div id="qualityTable"></div></section>
+            <section class="viz-card"><h2>Formulas</h2><div class="detail-copy"><b>DPI</b>: weighted rainfall, vegetation, soil-moisture, vegetation-health and heat components; available weights are renormalized.<br><b>CDRS</b>: 100 × (0.50H + 0.35E + 0.15V). H = DPI/100; E = highest selected-hazard exposure share; V = min–max scaled vulnerable share.<br><b>Classes</b>: Low 0–25, Moderate 25–50, High 50–75, Very high 75–100.</div></section>
+            <section class="viz-card"><h2>Downloads &amp; caveats</h2><div class="download-actions"><calcite-button id="downloadCsv" scale="s">Download filtered CSV</calcite-button><calcite-button id="downloadPng" scale="s" appearance="outline">Download page PNG</calcite-button><a href="./CLIMATE_PULSE_FIELD_GUIDE.md" download>Field guide</a></div><p class="dashboard-note">Unavailable fields never plot: LST_NIGHT, LSTN_ANOM, FACC_MAX. LST anomaly is low confidence where LST_VAL &lt; 25. WorldPop values are modelled 2026 estimates.</p></section>
+          </div>
+        </div>
+      </section>
+
+      <section id="futuresPage" class="page-content placeholder hidden-page">
+        <calcite-panel
+          heading="Climate Futures"
+          description="Planned CMIP6 scenario comparisons"
+        >
+          <div class="placeholder-content">
+            <h2>Climate Futures</h2>
+            <p>
+              This view is reserved for transparent comparisons of SSP2-4.5
+              and SSP5-8.5 projections.
+            </p>
+            <p>
+              Future values will show their reference period and projection
+              period alongside the model-derived indicator definition.
+            </p>
+          </div>
+        </calcite-panel>
+      </section>
+      </div>
+    </calcite-shell>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+import { DERIVED_INDICATORS, INDICATORS } from "../config/indicators.js";
+
+export type FieldValue = string | number | boolean | null;
+export type FieldType = "string" | "double" | "integer" | "boolean";
+export type FeatureAttributes = Record<string, FieldValue | undefined>;
+
+export interface FieldDefinition {
+  name: string;
+  type: FieldType;
+  alias: string;
+}
+
+const stringFields = new Set([
+  "ADM2_ID", "COUNTY", "SUB_COUNTY", "BND_SOURCE", "RUN_DATE", "BASE_START",
+  "BASE_END", "OBS_START", "OBS_DATE", "OBS_END", "QUAL_FLAG", "PROC_VER",
+  "OD_CHIRPS", "OD_ERA5", "OD_MVEG", "OD_MLST", "OD_VHI", "OD_SMAP", "OD_DW",
+  "OD_S2", "OD_GPM", "CUR_MTH", "SEAS_YR", "DW_WIN", "POP_VINT", "POP_SRC",
+  "EXP_VINT", "CM_MODELS", "CM_HIST", "CM_FUT", "CM_SSP"
+]);
+
+const publishedFields = `ADM2_ID COUNTY SUB_COUNTY ADM1_CD ADM2_CD ADM2_AREA BND_SOURCE BND_YEAR RUN_DATE BASE_START BASE_END OBS_START OBS_DATE OBS_END VALID_PCT QUAL_FLAG PROC_VER OD_CHIRPS OD_ERA5 OD_MVEG OD_MLST OD_VHI OD_SMAP OD_DW OD_S2 OD_GPM CUR_MTH CUR_ERA5 CUR_SMAP SEAS_YR BASE_CHIRP BASE_SMAP DW_WIN POP_VINT POP_SRC EXP_VINT CM_MODELS CM_HIST CM_FUT CM_SSP RAIN_ANN RAIN_ASD RAIN_P10 RAIN_P50 RAIN_P90 RAIN_TRND RAIN_LR RLR_SD RAIN_SR RSR_SD RAIN_MTH RMTH_BASE RAIN_ANOM RAIN_PCT RAIN_SEAS RSEAS_PCT SPI_01 SPI_03 SPI_06 SPI_12 SPI3_PCT RX1DAY RX5DAY CDD_MAX CWD_MAX T2M_MEAN T2M_MAX T2M_MIN T2M_CUR TEMP_ANOM HOT_DAYS HOT_PCT HEAT_DAYS PET_MM AET_MM RUNOFF_MM PET_ANOM AET_ANOM ERA_SM1 ERA_SM2 ERA_SM3 ERA_SM4 ERA_SM_AN NDVI_MEAN EVI_MEAN NDVI_LR NDVI_SR NDVI_NOW EVI_NOW NDVI_ANOM EVI_ANOM VCI_NOW NDVI_TRND EVI_TRND VEG_ST_PCT VEG_ST_DUR VEG_RECOV NDVI_VAL LST_DAY LST_NIGHT LSTD_NOW LSTN_NOW LST_ANOM LSTN_ANOM LST_DIF LST_HIGH LST_TRND LST_VAL TCI_NOW VHI_NOW VHI_ANOM VHI_ST_PCT SM_SURF SM_ROOT SM_S_AN SM_R_AN SMI_NOW RZ_DEF SM_VALID W_OCCUR W_SEASON W_RECUR W_AREA W_PCT W_MAX W_CHANGE ELEV_MEAN ELEV_MIN ELEV_MAX SLOPE_MEAN ASPECT_DOM TRI_MEAN TPI_MEAN TWI_MEAN TWI_MED SPT_MED FACC_MAX HND_MEAN DW_CROP DW_GRASS DW_SHRUB DW_TREE DW_BUILT DW_BARE DW_WATER DW_FLDV DW_CONF DW_CRP_CH DW_BLT_CH DW_TRE_CH WC_CROP WC_GRASS WC_SHRUB WC_TREE WC_BUILT WC_BARE WC_WATER WC_WETL POP_T25 POP_U525 POP_U1825 POP_WRA25 POP_6525 POP_M25 POP_F25 POP_D2525 POP_T26 POP_U526 POP_U1826 POP_WRA26 POP_6526 POP_M26 POP_F26 POP_D2626 POP_GROW POP_EXP U5_EXP WRA_EXP OLD_EXP EXP_PCT EXR_POP EXR_U5 EXR_U18 EXR_WRA EXR_OLD EXR_PCT EXS_POP EXS_U5 EXS_U18 EXS_WRA EXS_OLD EXS_PCT EXH_POP EXH_U5 EXH_U18 EXH_WRA EXH_OLD EXH_PCT S2_NDVI S2_NDMI S2_NDWI S2_MNDWI S2_NBR S2_BSI S2_VALID S2_W_AREA S2_W_CHG S2_WJRC IMG_MTH IMG_MAX30 IMG_DAYMX IMG_HVY CM245_PR CM245_LR CM245_SR CM245_PRSD CM245_TAS CM245_TSD CM585_PR CM585_LR CM585_SR CM585_PRSD CM585_TAS CM585_TSD`.split(" ");
+
+export const FIELD_SCHEMA: Readonly<Record<string, FieldDefinition>> = Object.fromEntries(
+  [...publishedFields, ...DERIVED_INDICATORS.map(({ field }) => field), "DPI_CLASS", "DPI_RANK", "HOTSPOT", "LOW_LST_COVER"]
+    .map((name) => [
+      name,
+      {
+        name,
+        type: name === "LOW_LST_COVER"
+          ? "boolean"
+          : stringFields.has(name) || ["DPI_CLASS", "HOTSPOT"].includes(name)
+            ? "string"
+            : "double",
+        alias: name.replaceAll("_", " ")
+      }
+    ])
+) as Readonly<Record<string, FieldDefinition>>;
+
+export const catalogueFields = [...INDICATORS, ...DERIVED_INDICATORS].map(({ field }) => field);
+
+export function assertCatalogueFieldsExist(
+  schema: Readonly<Record<string, FieldDefinition>> = FIELD_SCHEMA
+): void {
+  const missing = catalogueFields.filter((field) => !schema[field]);
+  if (missing.length > 0) {
+    throw new Error(`Indicator fields missing from schema: ${missing.join(", ")}`);
+  }
+}
