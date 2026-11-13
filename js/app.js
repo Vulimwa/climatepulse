@@ -15,8 +15,8 @@ import Map from "https://js.arcgis.com/4.31/@arcgis/core/Map.js";
       const SERVICE_URL =
         "https://services8.arcgis.com/oTalEaSXAuyNT7xf/arcgis/rest/services/climate_pulse_admin2/FeatureServer/0";
 
-      const DATA_URL = "data/climatepulse.json";
-      const PANEL_DATA_URL = "data/CLIMATE_PULSE_KENYA_ADMIN2_PANEL.csv";
+      const DATA_URL = new URL("../data/climatepulse.json", import.meta.url).href;
+      const PANEL_DATA_URL = new URL("../data/CLIMATE_PULSE_KENYA_ADMIN2_PANEL.csv", import.meta.url).href;
       const UNAVAILABLE_FIELDS = new Set(["LST_NIGHT", "LSTN_ANOM", "FACC_MAX"]);
       const GROUPS = {
         "Drought & rainfall": ["SPI_01", "SPI_03", "SPI_06", "SPI_12", "SPI3_PCT", "RAIN_ANOM", "RAIN_PCT", "RSEAS_PCT", "RAIN_ANN", "RAIN_TRND", "CDD_MAX", "RX1DAY"],
